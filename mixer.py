@@ -1,5 +1,18 @@
+import os
+from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
-MIXER_ID = 1
+load_dotenv()
+
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+    # Subscribing in on_connect() - if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    mixer_id = os.getenv('MIXER_ID')
+    client.subscribe(f'mixer/{mixer_id}/#', 2)
+
+# The callback for when a PUBLISH message is received from the server.
 
 
 def on_message(client, userdata, message):
@@ -9,19 +22,12 @@ def on_message(client, userdata, message):
     logOut.close()
 
 
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        client.connected_flag = True  # set flag
-        print("connected OK")
-    else:
-        print("Bad connection Returned code=", rc)
-
-
-mqttBroker = "127.0.0.1"
-client = mqtt.Client(str(MIXER_ID))
+# Create an MQTT client and attach our routines to it.
+mqttBroker = os.getenv('MQTT_BROKER')
+port = int(os.getenv('PORT'))
+client = mqtt.Client()
 client.on_connect = on_connect
-client.connect(mqttBroker)
-
-client.subscribe(f'mixer/{MIXER_ID}/#', 2)
 client.on_message = on_message
+
+client.connect(mqttBroker, port, 60)
 client.loop_forever()
