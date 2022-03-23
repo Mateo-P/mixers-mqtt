@@ -11,7 +11,7 @@ def on_connect(client, userdata, flags, rc):
 
 def on_message(client, userdata, message):
     parsed_csv_name = message.topic.replace('/', '-')
-    logOut = open(f'{parsed_csv_name}.csv', "a", newline='')
+    logOut = open(f'{parsed_csv_name}.csv', "w", newline='')
     print(message.payload.decode("utf-8"))
     logOut.write(message.payload.decode("utf-8"))
     logOut.close()
