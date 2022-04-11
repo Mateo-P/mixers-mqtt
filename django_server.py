@@ -1,23 +1,28 @@
 import paho.mqtt.client as mqtt
 
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+    # Subscribing in on_connect() - if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    client.subscribe(f'mixer/+/recipes_request', 2)
+
+
 def on_message(client, userdata, message):
-    logOut = open(f'{message.topic}.csv',"a",newline='')
-    print(message.payload)
-    logOut.write(str(message.payload.decode("utf-8"))+ "\n")
+    parsed_csv_name = message.topic.replace('/', '-')
+    logOut = open(f'{parsed_csv_name}.csv', "w", newline='')
+    print(message.payload.decode("utf-8"))
+    logOut.write(message.payload.decode("utf-8"))
     logOut.close()
 
-#Connection to mqtt-broker
-mqttBroker = "127.0.0.1"
+
+# Connection to mqtt-broker
+mqttBroker = "test.mosquitto.org"
+port = 1883
 client = mqtt.Client("django_server")
-client.connect(mqttBroker)
-
-# methods
-def send_recipe_to_mixer(recipe="MMGV;100;200;300;144;123;321;222;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;0;", mixer_id=1):
-    client.publish(f'mixer/{mixer_id}/newrecipe', recipe,2)
-    print("Just published " + str(recipe) + " to Topic mixer/"+mixer_id)
-
-# Loop to receive messages trought subscriptons
-client.loop_start()
-client.subscribe("mixer/+/recipes_request",2)
+client.on_connect = on_connect
 client.on_message = on_message
+
+client.connect(mqttBroker, port, 60)
 client.loop_forever()

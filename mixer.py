@@ -1,29 +1,36 @@
-from email import message
+import os
+from dotenv import load_dotenv
 import paho.mqtt.client as mqtt
-MIXER_ID = '1'
+load_dotenv()
+
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+    # Subscribing in on_connect() - if we lose the connection and
+    # reconnect then subscriptions will be renewed.
+    mixer_id = os.getenv('MIXER_ID')
+    site_id = os.getenv('SITE_ID')
+    client.subscribe(f'mixer/{mixer_id}/#', 2)
+
+    client.subscribe(f'site/{site_id}/#', 2)
+
+# The callback for when a PUBLISH message is received from the server.
+
 
 def on_message(client, userdata, message):
-    logOut = open("mixer_recipes.csv","a",newline='')
+    logOut = open("mixer_recipes.csv", "w", newline='')
     print(message.payload)
-    logOut.write(str(message.payload.decode("utf-8"))+ "\n")
+    logOut.write(str(message.payload.decode("utf-8")) + "\n")
     logOut.close()
-  
-#Connection to mqtt-broker
-mqttBroker = "127.0.0.1"
-client = mqtt.Client(MIXER_ID)
-client.connect(mqttBroker)
 
-# methods
-def send_repices_to_server():
-    csv_recipes = open("mixer_recipes.csv","r")
-    recipes =  csv_recipes.readlines()
-    for recipe in recipes:
-        print(recipe)
-    client.publish(f'mixer/{MIXER_ID}/recipes_request', recipes,2)
-    print("Just published " + str(recipe) + " to Topic mixer/"+MIXER_ID)
 
-# Loop to receive messages trought subscriptons
-client.loop_start()
-client.subscribe(f'mixer/{MIXER_ID}/#',2)
+# Create an MQTT client and attach our routines to it.
+mqttBroker = os.getenv('MQTT_BROKER')
+port = int(os.getenv('PORT'))
+client = mqtt.Client()
+client.on_connect = on_connect
 client.on_message = on_message
+
+client.connect(mqttBroker, port, 60)
 client.loop_forever()
