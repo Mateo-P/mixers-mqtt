@@ -10,7 +10,10 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() - if we lose the connection and
     # reconnect then subscriptions will be renewed.
     mixer_id = os.getenv('MIXER_ID')
+    site_id = os.getenv('SITE_ID')
     client.subscribe(f'mixer/{mixer_id}/#', 2)
+
+    client.subscribe(f'site/{site_id}/#', 2)
 
 # The callback for when a PUBLISH message is received from the server.
 
