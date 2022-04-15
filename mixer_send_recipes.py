@@ -7,7 +7,7 @@ import paho.mqtt.publish as publish
 load_dotenv()
 
 
-def on_created(event):
+def send_recipes():
     print('sent')
     # Create an MQTT client and attach our routines to it.
     mqttBroker = os.getenv('MQTT_BROKER')
@@ -26,6 +26,11 @@ def on_created(event):
         f'Just published {payload} to Topic: mixer/{mixer_id}/recipes_request')
 
 
+def on_created(event):
+    print('created')
+    send_recipes()
+
+
 def on_deleted(event):
     print('deleted')
 
@@ -36,6 +41,7 @@ def on_modified(event):
 
 def on_moved(event):
     print('moved')
+    send_recipes()
 
 
 if __name__ == "__main__":
