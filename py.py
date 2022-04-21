@@ -10,7 +10,7 @@ try:
     mixer_id = os.getenv('MIXER_ID')
     topic = f'mixer/{mixer_id}/recipes_request'
 
-    csv_recipes = open("mixer_recipes_download.csv", "r")
+    csv_recipes = open("recipe.csv", "r")
     recipes = csv_recipes.readlines()
     payload = ""
     for recipe in recipes:
@@ -19,9 +19,12 @@ try:
                    hostname=mqttBroker, port=port, keepalive=60)
     print(
         f'Just published {payload} to Topic: mixer/{mixer_id}/recipes_request')
-    clean_file = os.system('sudo rm mixer_recipes_download.csv')
+    clean_file = os.system('sudo rm recipe.csv')
     print("`rm` ran with exit code %d" % clean_file)
-    
+    unmount = os.system('sudo modprobe -r g_mass_storage')
+    print("`unsmount` ran with exit code %d" % unmount)
+    mount = os.system(
+        "sudo modprobe g_mass_storage file=/usb-drive.img stall=0 ro=0 removable=1")
+    print("`mount` ran with exit code %d" % mount)
 except:
     print('tried to read csv but it doesnt exists')
-
