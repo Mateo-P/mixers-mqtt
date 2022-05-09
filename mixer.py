@@ -20,7 +20,7 @@ def on_connect(client, userdata, flags, rc):
 
 
 def on_message(client, userdata, message):
-    logOut = open("mixer_recipes_to_load.csv", "w", newline='')
+    logOut = open("recipe.csv", "w", newline='')
     print(message.payload)
     logOut.write(str(message.payload.decode("utf-8")) + "\n")
     logOut.close()
